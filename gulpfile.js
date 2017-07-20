@@ -8,7 +8,7 @@ var taskConfig = {
 		lib: 'lib',
 		dependencies: [
 			'blacklist',
-			'classNames',
+			'classnames',
 			'react',
 			'react-addons-css-transition-group',
 			'react-dom',
