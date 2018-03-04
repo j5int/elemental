@@ -1,25 +1,27 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
-import Transition from 'react-addons-css-transition-group';
+import { CSSTransitionGroup } from 'react-transition-group';
 import blacklist from 'blacklist';
 import classNames from 'classnames';
+import createReactClass from 'create-react-class';
 
 import { canUseDOM } from '../constants';
 
-const TransitionPortal = React.createClass({
+const TransitionPortal = createReactClass({
 	displayName: 'TransitionPortal',
-	componentDidMount() {
+	componentDidMount () {
 		if (!canUseDOM) return;
 		let p = document.createElement('div');
 		document.body.appendChild(p);
 		this.portalElement = p;
 		this.componentDidUpdate();
 	},
-	componentDidUpdate() {
+	componentDidUpdate () {
 		if (!canUseDOM) return;
-		ReactDOM.render(<Transition {...this.props}>{this.props.children}</Transition>, this.portalElement);
+		ReactDOM.render(<CSSTransitionGroup {...this.props}>{this.props.children}</CSSTransitionGroup>, this.portalElement);
 	},
-	componentWillUnmount() {
+	componentWillUnmount () {
 		if (!canUseDOM) return;
 		document.body.removeChild(this.portalElement);
 	},
@@ -27,17 +29,17 @@ const TransitionPortal = React.createClass({
 	render: () => null,
 });
 
-module.exports = React.createClass({
+const Modal = createReactClass({
 	displayName: 'Modal',
 	propTypes: {
-		autoFocusFirstElement: React.PropTypes.bool,
-		backdropClosesModal: React.PropTypes.bool,
-		className: React.PropTypes.string,
-		isOpen: React.PropTypes.bool,
-		onCancel: React.PropTypes.func,
-		width: React.PropTypes.oneOfType([
-			React.PropTypes.oneOf(['small', 'medium', 'large']),
-			React.PropTypes.number,
+		autoFocusFirstElement: PropTypes.bool,
+		backdropClosesModal: PropTypes.bool,
+		className: PropTypes.string,
+		isOpen: PropTypes.bool,
+		onCancel: PropTypes.func,
+		width: PropTypes.oneOfType([
+			PropTypes.oneOf(['small', 'medium', 'large']),
+			PropTypes.number,
 		]),
 	},
 	getDefaultProps () {
@@ -45,15 +47,28 @@ module.exports = React.createClass({
 			width: 'medium',
 		};
 	},
-	componentWillReceiveProps: function(nextProps) {
+	componentWillReceiveProps: function (nextProps) {
 		if (!canUseDOM) return;
+
+		const target = document.body;
+		const scrollbarWidth = window.innerWidth - document.body.clientWidth; // 1.
+
 		if (!this.props.isOpen && nextProps.isOpen) {
 			// setTimeout(() => this.handleAccessibility());
-			document.body.style.overflow = 'hidden';
+			target.style.overflow = 'hidden';
+			target.style.paddingRight = scrollbarWidth + 'px';
 		} else if (this.props.isOpen && !nextProps.isOpen) {
 			// setTimeout(() => this.removeAccessibilityHandlers());
-			document.body.style.overflow = null;
+			target.style.overflow = '';
+			target.style.paddingRight = '';
 		}
+	},
+	componentWillUnmount: function () {
+		if (!canUseDOM) return;
+
+		const target = document.body;
+		target.style.overflow = '';
+		target.style.paddingRight = '';
 	},
 	/*
 	handleAccessibility () {
@@ -122,36 +137,65 @@ module.exports = React.createClass({
 	},
 	*/
 	handleClose () {
-		this.props.onCancel();
+		const { backdropClosesModal, onCancel } = this.props;
+
+		console.log('handleClose', backdropClosesModal);
+
+		if (backdropClosesModal) onCancel();
 	},
-	renderDialog() {
-		if (!this.props.isOpen) return;
-		let dialogClassname = classNames('Modal-dialog', (this.props.width && isNaN(this.props.width)) ? (
-			'Modal-dialog--' + this.props.width
-		) : null);
+	handleDialogClick (event) {
+		event.stopPropagation();
+	},
+	renderDialog () {
+		const { children, isOpen, width } = this.props;
+
+		if (!isOpen) return;
+
+		const style = (width && !isNaN(width)) ? { width: width + 20 } : null;
+		const dialogClassname = classNames('Modal-dialog', (width && isNaN(width))
+			? 'Modal-dialog--' + width
+			: null);
+
 		return (
-			<div className={dialogClassname} style={(this.props.width && !isNaN(this.props.width)) ? { width: this.props.width + 20 } : null}>
-				<div ref={ref => { this.modalElement = ref; }} className="Modal-content">
-					{this.props.children}
+			<div className={dialogClassname} style={style} onClick={this.handleDialogClick}>
+				<div ref={r => (this.modalElement = r)} className="Modal-content">
+					{children}
 				</div>
 			</div>
 		);
 	},
-	renderBackdrop() {
-		if (!this.props.isOpen) return;
-		return <div className="Modal-backdrop" onClick={this.props.backdropClosesModal ? this.handleClose : null} />;
+	renderBackdrop () {
+		const { isOpen } = this.props;
+
+		if (!isOpen) return;
+
+		return <div className="Modal-backdrop" />;
 	},
-	render() {
-		var className = classNames('Modal', {
+	render () {
+		const className = classNames('Modal', {
 			'is-open': this.props.isOpen,
 		}, this.props.className);
-		var props = blacklist(this.props, 'backdropClosesModal', 'className', 'isOpen', 'onCancel');
+
+		const props = blacklist(this.props, 'backdropClosesModal', 'className', 'isOpen', 'onCancel');
+
 		return (
 			<div>
-				<TransitionPortal {...props} data-modal="true" className={className} /*onClick={this.handleModalClick}*/ transitionName="Modal-dialog" transitionEnterTimeout={260} transitionLeaveTimeout={140} component="div">
+				<TransitionPortal
+					{...props}
+					className={className}
+					data-modal="true"
+					onClick={this.handleClose}
+					transitionEnterTimeout={260}
+					transitionLeaveTimeout={140}
+					transitionName="Modal-dialog"
+				>
 					{this.renderDialog()}
 				</TransitionPortal>
-				<TransitionPortal transitionName="Modal-background" transitionEnterTimeout={140} transitionLeaveTimeout={240} component="div">
+				<TransitionPortal
+					transitionName="Modal-background"
+					transitionEnterTimeout={140}
+					transitionLeaveTimeout={240}
+				>
 					{this.renderBackdrop()}
 				</TransitionPortal>
 			</div>
@@ -161,6 +205,8 @@ module.exports = React.createClass({
 
 
 // expose the children to the top level export
-module.exports.Body = require('./ModalBody');
-module.exports.Footer = require('./ModalFooter');
-module.exports.Header = require('./ModalHeader');
+Modal.Body = require('./ModalBody');
+Modal.Footer = require('./ModalFooter');
+Modal.Header = require('./ModalHeader');
+
+export default Modal;

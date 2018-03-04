@@ -1,28 +1,30 @@
-var React = require('react');
-var blacklist = require('blacklist');
-var classNames = require('classnames');
+const React = require('react');
+const classNames = require('classnames');
+const PropTypes = require('prop-types');
+const createReactClass = require('create-react-class');
 
-module.exports = React.createClass({
+export default createReactClass({
 	displayName: 'FormInput',
 	propTypes: {
-		autoFocus: React.PropTypes.bool,
-		className: React.PropTypes.string,
-		disabled: React.PropTypes.bool,
-		href: React.PropTypes.string,
-		id: React.PropTypes.string,
-		multiline: React.PropTypes.bool,
-		name: React.PropTypes.string,
-		noedit: React.PropTypes.bool,
-		onChange: React.PropTypes.func,
-		size: React.PropTypes.oneOf(['lg', 'sm', 'xs']),
-		type: React.PropTypes.string,
-		value: React.PropTypes.oneOfType([
-			React.PropTypes.number,
-			React.PropTypes.string,
+		autoFocus: PropTypes.bool,
+		className: PropTypes.string,
+		disabled: PropTypes.bool,
+		href: PropTypes.string,
+		id: PropTypes.string,
+		innerRef: PropTypes.func,
+		multiline: PropTypes.bool,
+		name: PropTypes.string,
+		noedit: PropTypes.bool,
+		onChange: PropTypes.func,
+		size: PropTypes.oneOf(['lg', 'sm', 'xs']),
+		type: PropTypes.string,
+		value: PropTypes.oneOfType([
+			PropTypes.number,
+			PropTypes.string,
 		]),
 	},
 
-	getDefaultProps() {
+	getDefaultProps () {
 		return {
 			type: 'text',
 		};
@@ -34,11 +36,22 @@ module.exports = React.createClass({
 		}
 	},
 
-	focus() {
-		this.refs.input.focus();
+	focus () {
+		this.input.focus();
 	},
 
-	render() {
+	select () {
+		this.input.select();
+	},
+	getRef (ref) {
+		this.target = ref;
+
+		if (this.props.innerRef) {
+			this.props.innerRef(ref);
+		}
+	},
+
+	render () {
 		const { noedit, multiline, size, className, ...rest } = this.props;
 		// classes
 		let newClassName = classNames(
@@ -50,7 +63,7 @@ module.exports = React.createClass({
 			(size ? ('FormInput--' + size) : null),
 			className
 		);
-		let props = { ...rest, className: newClassName, ref: 'input' };
+		let props = { ...rest, className: newClassName };
 		let Element = 'input';
 		if (noedit && this.props.href) {
 			Element = 'a';
@@ -64,6 +77,6 @@ module.exports = React.createClass({
 			Element = 'textarea';
 		}
 
-		return <Element {...props} />;
+		return <Element ref={this.getRef} {...props} />;
 	},
 });

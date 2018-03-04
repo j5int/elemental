@@ -1,20 +1,22 @@
 const React = require('react');
 const classNames = require('classnames');
+const PropTypes = require('prop-types');
+const createReactClass = require('create-react-class');
 
-const Page = React.createClass({
+const Page = createReactClass({
 	displayName: 'Page',
 	propTypes: {
-		children: React.PropTypes.node,
-		label: React.PropTypes.string,
-		onSelect: React.PropTypes.func,
-		page: React.PropTypes.number,
-		selected: React.PropTypes.bool,
+		children: PropTypes.node,
+		label: PropTypes.string,
+		onSelect: PropTypes.func,
+		page: PropTypes.number,
+		selected: PropTypes.bool,
 	},
 	onSelect () {
 		this.props.onSelect(this.props.page);
 	},
 	render () {
-		const { children, selected, label } = this.props;
+		const { children, selected } = this.props;
 		const className = classNames('Pagination__list__item', {
 			'is-selected': selected,
 		});
@@ -26,34 +28,50 @@ const Page = React.createClass({
 	},
 });
 
-module.exports = React.createClass({
+function range (props) {
+	const { currentPage, pageSize, total } = props;
+	if (!total) {
+		return {};
+	} else {
+		const start = (pageSize * (currentPage - 1)) + 1;
+		const end = Math.min(start + pageSize - 1, total);
+		return { start, end };
+	}
+}
+
+export default createReactClass({
 	displayName: 'Pagination',
 	propTypes: {
-		className: React.PropTypes.string,
-		currentPage: React.PropTypes.number.isRequired,
-		limit: React.PropTypes.number,
-		onPageSelect: React.PropTypes.func,
-		pageSize: React.PropTypes.number.isRequired,
-		plural: React.PropTypes.string,
-		singular: React.PropTypes.string,
-		style: React.PropTypes.object,
-		total: React.PropTypes.number.isRequired,
+		className: PropTypes.string,
+		currentPage: PropTypes.number.isRequired,
+		label: PropTypes.func,
+		limit: PropTypes.number,
+		onPageSelect: PropTypes.func,
+		pageSize: PropTypes.number.isRequired,
+		plural: PropTypes.string,
+		singular: PropTypes.string,
+		style: PropTypes.object,
+		total: PropTypes.number.isRequired,
 	},
 	renderCount () {
 		let count = '';
-		let { currentPage, pageSize, plural, singular, total } = this.props;
-		if (!total) {
-			count = 'No ' + (plural || 'records');
-		} else if (total > pageSize) {
-			let start = (pageSize * (currentPage - 1)) + 1;
-			let end = Math.min(start + pageSize - 1, total);
-			count = `Showing ${start} to ${end} of ${total}`;
+		let { currentPage, pageSize, plural, singular, total, label } = this.props;
+		if (typeof label === 'function') {
+			const params = Object.assign(range(this.props), { currentPage, pageSize, total });
+			count = label(params);
 		} else {
-			count = 'Showing ' + total;
-			if (total > 1 && plural) {
-				count += ' ' + plural;
-			} else if (total === 1 && singular) {
-				count += ' ' + singular;
+			if (!total) {
+				count = 'No ' + (plural || 'records');
+			} else if (total > pageSize) {
+				const { start, end } = range(this.props);
+				count = `Showing ${start} to ${end} of ${total}`;
+			} else {
+				count = 'Showing ' + total;
+				if (total > 1 && plural) {
+					count += ' ' + plural;
+				} else if (total === 1 && singular) {
+					count += ' ' + singular;
+				}
 			}
 		}
 		return (
@@ -76,7 +94,7 @@ module.exports = React.createClass({
 
 		if (limit && (limit < totalPages)) {
 			let rightLimit = Math.floor(limit / 2);
-			let leftLimit =  rightLimit + (limit % 2) - 1;
+			let leftLimit = rightLimit + (limit % 2) - 1;
 			minPage = currentPage - leftLimit;
 			maxPage = currentPage + rightLimit;
 
@@ -115,5 +133,5 @@ module.exports = React.createClass({
 				{this.renderPages()}
 			</div>
 		);
-	}
+	},
 });
