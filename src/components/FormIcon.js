@@ -4,7 +4,7 @@ const PropTypes = require('prop-types');
 const Spinner = require('./Spinner');
 const createReactClass = require('create-react-class');
 
-const icons = require('../Octicons').map;
+const icons = require('../Octicons').Octicon.map;
 
 export default createReactClass({
 	displayName: 'FormIcon',

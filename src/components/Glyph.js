@@ -4,8 +4,8 @@ const PropTypes = require('prop-types');
 const createReactClass = require('create-react-class');
 var blacklist = require('blacklist');
 
-const icons = require('../Octicons').map;
-const validNames = require('../Octicons').keys;
+const icons = require('../Octicons').Octicon.map;
+const validNames = require('../Octicons').Octicon.keys;
 
 const Glyph = createReactClass({
 	displayName: 'Glyph',
