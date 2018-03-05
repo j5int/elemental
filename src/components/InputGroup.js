@@ -24,6 +24,6 @@ const InputGroup = createReactClass({
 });
 
 // expose the child to the top level export
-InputGroup.Section = require('./InputGroupSection');
+InputGroup.Section = require('./InputGroupSection').default;
 
 export default InputGroup;
