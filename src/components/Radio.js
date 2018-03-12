@@ -1,29 +1,38 @@
-var blacklist = require('blacklist');
-var classNames = require('classnames');
-var React = require('react');
+const blacklist = require('blacklist');
+const classNames = require('classnames');
+const React = require('react');
+const PropTypes = require('prop-types');
+const createReactClass = require('create-react-class');
 
-var Radio = React.createClass({
+var Radio = createReactClass({
 	propTypes: {
-		className: React.PropTypes.string,
-		disabled: React.PropTypes.bool,
-		inline: React.PropTypes.bool,
-		label: React.PropTypes.string
+		className: PropTypes.string,
+		disabled: PropTypes.bool,
+		inline: PropTypes.bool,
+		innerRef: PropTypes.func,
+		label: PropTypes.string,
 	},
-	render() {
-		var componentClass = classNames('Radio', {
+	getRef (ref) {
+		this.target = ref;
+
+		if (this.props.innerRef) {
+			this.props.innerRef(ref);
+		}
+	},
+	render () {
+		const componentClass = classNames('Radio', {
 			'Radio--disabled': this.props.disabled,
-			'Radio--inline': this.props.inline
+			'Radio--inline': this.props.inline,
 		}, this.props.className);
-		var props = blacklist(this.props, 'className', 'label');
+		const props = blacklist(this.props, 'className', 'label');
 
 		return (
 			<label className={componentClass}>
-				<input type="radio" className="Radio__input" {...props} />
+				<input ref={this.getRef} type="radio" className="Radio__input" {...props} />
 				{this.props.label && <span className="Radio__label">{this.props.label}</span>}
 			</label>
 		);
-	}
+	},
 });
 
-module.exports = Radio;
-
+export default Radio;

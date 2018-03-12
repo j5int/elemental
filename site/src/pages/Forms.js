@@ -1,6 +1,7 @@
 /* eslint no-alert: 0 */
 
 const React = require('react');
+const createReactClass = require('create-react-class');
 
 const {
 	Button,
@@ -30,7 +31,7 @@ const controlOptions = [
 	{ label: 'Caramel',    value: 'caramel' },
 	{ label: 'Chocolate',  value: 'chocolate' },
 	{ label: 'Strawberry', value: 'strawberry' },
-	{ label: 'Vanilla',    value: 'vanilla' }
+	{ label: 'Vanilla',    value: 'vanilla', disabled: true }
 ];
 const COUNTRIES = require('../data/countries');
 const COLOR_VARIANTS = [
@@ -41,7 +42,7 @@ const COLOR_VARIANTS = [
 	{ label: 'Danger',  icon: 'stop', value: 'danger' }
 ];
 
-var Forms = React.createClass({
+var Forms = createReactClass({
 	displayName: 'VIEW_Forms',
 
 	getInitialState () {
@@ -462,7 +463,14 @@ var Forms = React.createClass({
 						<FormSelect options={controlOptions} firstOption="Select" onChange={updateSelect} />
 					</div>
 					<ExampleSource>
-						{`<FormSelect options={[...]} firstOption="Select" onChange={this.handleSelect} />`}
+						{`
+							<FormSelect options={[
+								{ label: 'Caramel',    value: 'caramel' },
+								{ label: 'Chocolate',  value: 'chocolate' },
+								{ label: 'Strawberry', value: 'strawberry' },
+								{ label: 'Vanilla',    value: 'vanilla', disabled: true }
+							]} firstOption="Select" onChange={this.handleSelect} />
+						`}
 					</ExampleSource>
 				</div>
 				<div className="code-example">

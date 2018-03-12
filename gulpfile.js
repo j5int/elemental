@@ -10,7 +10,7 @@ var taskConfig = {
 			'blacklist',
 			'classnames',
 			'react',
-			'react-addons-css-transition-group',
+			'react-transition-group',
 			'react-dom',
 			'react-router'
 		],
